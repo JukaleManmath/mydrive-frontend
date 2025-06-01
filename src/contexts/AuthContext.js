@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL || 'https://mydrive-backend-oi3r.onrender.com';
+
 const AuthContext = createContext(null);
 
 export const useAuth = () => {
@@ -67,7 +69,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const response = await axios.get('http://localhost:8000/users/me');
+        const response = await axios.get(`${API_URL}/users/me`);
         console.log('Fetched user data:', response.data);
         setUser(response.data);
         setIsAuthenticated(true);
@@ -92,7 +94,7 @@ export const AuthProvider = ({ children }) => {
       formData.append('username', username);
       formData.append('password', password);
 
-      const response = await axios.post('http://localhost:8000/token', formData, {
+      const response = await axios.post(`${API_URL}/token`, formData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
@@ -109,7 +111,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (username, email, password) => {
     try {
-      await axios.post('http://localhost:8000/register', {
+      await axios.post(`${API_URL}/register`, {
         username,
         email,
         password,

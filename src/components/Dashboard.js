@@ -286,6 +286,7 @@ function Dashboard() {
     }
 
     try {
+      const currentFolderId = path.length > 0 ? path[path.length - 1].id : null;
       const response = await axios.post(
         `${API_URL}/folders/`,
         { name: newFolderName, parent_id: currentFolderId },

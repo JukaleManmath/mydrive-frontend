@@ -824,7 +824,7 @@ function Dashboard() {
                       }}
                     >
                       <Box sx={{ flexShrink: 0, mr: 2 }}>
-                        {item.type === 'folder' ? (
+                        {(item.type === 'folder' || item.is_folder || item.mime_type === 'folder') ? (
                           <FolderIcon sx={{ color: theme.palette.warning.main, fontSize: 32 }} />
                         ) : (
                           getFileIcon(item)
@@ -838,7 +838,7 @@ function Dashboard() {
                           {item.filename}
                         </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {item.type === 'folder' ? 'Folder' : (item.file_type || 'File')}
+                        {(item.type === 'folder' || item.is_folder || item.mime_type === 'folder') ? 'Folder' : (item.file_type || 'File')}
                           </Typography>
                       </Box>
                     </Box>

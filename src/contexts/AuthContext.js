@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }) => {
       try {
         console.log('Fetching user data with token:', token);
         const response = await axios.get(`${API_URL}/users/me`);
-        console.log('Fetched user data:', response.data);
+        console.log('Raw user data:', response.data);
         
         if (!response.data) {
           console.error('No user data received');
@@ -83,14 +83,14 @@ export const AuthProvider = ({ children }) => {
           return;
         }
 
-        // Extract user data and ensure username is present
+        // Process user data
         const userData = response.data;
+        // If username is not present but email is, use email as username
         if (!userData.username && userData.email) {
-          // If username is not present but email is, use email as username
           userData.username = userData.email.split('@')[0];
         }
 
-        console.log('Setting user data:', userData);
+        console.log('Processed user data:', userData);
         setUser(userData);
         setIsAuthenticated(true);
       } catch (error) {
@@ -139,22 +139,18 @@ export const AuthProvider = ({ children }) => {
         });
         console.log('Raw user data after login:', userResponse.data);
         
-        // Check if we have a valid user object
         if (!userResponse.data) {
           console.error('No user data received');
           throw new Error('No user data received');
         }
 
-        // Log all available fields in the user data
-        console.log('User data fields:', Object.keys(userResponse.data));
-        
-        // Extract user data and ensure username is present
+        // Process user data
         const userData = userResponse.data;
+        // If username is not present but email is, use email as username
         if (!userData.username && userData.email) {
-          // If username is not present but email is, use email as username
           userData.username = userData.email.split('@')[0];
         }
-        
+
         console.log('Processed user data:', userData);
         setUser(userData);
         setIsAuthenticated(true);

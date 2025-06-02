@@ -92,10 +92,16 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
 
     const handleDownload = async () => {
         if (!file) return;
-        
         setDownloading(true);
         try {
-            await downloadFile(file.id);
+            const blob = await downloadFile(file.id);
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', file.filename || file.name);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
         } catch (err) {
             console.error('Error downloading file:', err);
             setError(err.message);
@@ -131,8 +137,8 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
             }
             return <iframe src={previewUrl} style={{ width: '100%', height: '60vh', border: 'none' }} title={displayName} />;
         }
-        if (previewContent) {
-            return <Box sx={{ whiteSpace: 'pre-wrap', p: 2 }}><pre style={{ margin: 0 }}>{previewContent}</pre></Box>;
+        if (previewContent || file.content) {
+            return <Box sx={{ whiteSpace: 'pre-wrap', p: 2 }}><pre style={{ margin: 0 }}>{previewContent || file.content}</pre></Box>;
         }
         return (
             <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
@@ -177,7 +183,7 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     <Typography variant="body2" sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ color: theme.palette.text.secondary }}>Name:</span>
-                        <span style={{ color: theme.palette.text.primary }}>{file.filename}</span>
+                        <span style={{ color: theme.palette.text.primary }}>{file.filename || file.name}</span>
                     </Typography>
                     <Typography variant="body2" sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ color: theme.palette.text.secondary }}>Type:</span>
@@ -243,11 +249,11 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
                     </Button>
                     <Button
                         variant="outlined"
-                    color="primary"
-                    onClick={() => onShare(file)}
+                        color="primary"
+                        onClick={() => onShare(file)}
                         sx={{ 
-                        marginTop: 1,
-                        marginBottom: 1
+                            marginTop: 1,
+                            marginBottom: 1
                         }}
                     >
                         Share

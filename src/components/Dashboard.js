@@ -62,7 +62,7 @@ function Dashboard() {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const { token, user } = useAuth();
   const theme = useTheme();
-  const [path, setPath] = useState([{ id: null, filename: 'My Files' }]);
+  const [path, setPath] = useState([{ id: null, name: 'My Files' }]);
   const [createFolderDialogOpen, setCreateFolderDialogOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -97,16 +97,16 @@ function Dashboard() {
             });
             if (!response.data) {
               // If folder doesn't exist, go back to root
-              setPath([{ id: null, filename: 'My Files' }]);
-              window.history.replaceState({ path: [{ id: null, filename: 'My Files' }] }, '', window.location.pathname);
+              setPath([{ id: null, name: 'My Files' }]);
+              window.history.replaceState({ path: [{ id: null, name: 'My Files' }] }, '', window.location.pathname);
               return;
             }
           }
           setPath(event.state.path);
         } catch (error) {
           // If there's an error (e.g., folder deleted), go back to root
-          setPath([{ id: null, filename: 'My Files' }]);
-          window.history.replaceState({ path: [{ id: null, filename: 'My Files' }] }, '', window.location.pathname);
+          setPath([{ id: null, name: 'My Files' }]);
+          window.history.replaceState({ path: [{ id: null, name: 'My Files' }] }, '', window.location.pathname);
         }
       }
     };

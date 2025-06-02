@@ -800,76 +800,75 @@ function Dashboard() {
           ) : (
             <List sx={{ p: 0 }}>
               {filteredFiles.map((item, index) => (
-                  <ListItem
+                <ListItem
                   key={item.id}
-                    sx={{
-                      py: 2.5,
-                      px: 3,
-                      '&:hover': {
-                        backgroundColor: 'action.hover',
-                      },
-                      display: 'flex',
+                  sx={{
+                    py: 2.5,
+                    px: 3,
+                    '&:hover': {
+                      backgroundColor: 'action.hover',
+                    },
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    cursor: (item.type === 'folder' || item.is_folder || item.mime_type === 'folder') ? 'pointer' : 'default',
+                  }}
+                  onClick={() => {
+                    if (item.type === 'folder' || item.is_folder || item.mime_type === 'folder') {
+                      handleFolderClick(item);
+                    }
+                  }}
+                >
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
                       alignItems: 'center',
-                      gap: 2,
-                      cursor: 'pointer',
+                      flex: 1,
+                      minWidth: 0,
                     }}
-                    onClick={() => handleFileClick(item)}
                   >
-                    <Box 
-                      sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center',
-                        flex: 1,
-                        minWidth: 0,
-                      }}
-                    >
-                      <Box sx={{ flexShrink: 0, mr: 2 }}>
-                        {(item.type === 'folder' || item.is_folder || item.mime_type === 'folder') ? (
-                          <FolderIcon sx={{ color: theme.palette.warning.main, fontSize: 32 }} />
-                        ) : (
-                          getFileIcon(item)
-                        )}
-                      </Box>
-                      <Box sx={{ minWidth: 0, flex: 1 }}>
-                        <Typography 
+                    <Box sx={{ flexShrink: 0, mr: 2 }}>
+                      {(item.type === 'folder' || item.is_folder || item.mime_type === 'folder') ? (
+                        <FolderIcon sx={{ color: theme.palette.warning.main, fontSize: 32 }} />
+                      ) : (
+                        getFileIcon(item)
+                      )}
+                    </Box>
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                      <Typography 
                         variant="body1" 
                         noWrap
-                        >
-                          {item.filename}
-                        </Typography>
+                      >
+                        {item.filename}
+                      </Typography>
                       <Typography variant="caption" color="text.secondary">
                         {(item.type === 'folder' || item.is_folder || item.mime_type === 'folder') ? 'Folder' : (item.file_type || 'File')}
-                          </Typography>
-                      </Box>
+                      </Typography>
                     </Box>
+                  </Box>
                   <Box sx={{ display: 'flex', gap: 1 }}>
-                    {item.type !== 'folder' && (
+                    {/* Only show preview/download for files */}
+                    {!(item.type === 'folder' || item.is_folder || item.mime_type === 'folder') && (
                       <>
                         <Tooltip title="Preview">
-                          <IconButton onClick={(e) => {
-                            e.stopPropagation();
-                            handleFileClick(item);
-                          }} size="small">
+                          <IconButton onClick={e => { e.stopPropagation(); handleFileClick(item); }} size="small">
                             <PreviewIcon />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Download">
-                          <IconButton onClick={(e) => {
-                              e.stopPropagation();
-                              handleDownload(item.id, item.filename);
-                          }} size="small">
+                          <IconButton onClick={e => { e.stopPropagation(); handleDownload(item.id, item.filename); }} size="small">
                             <DownloadIcon />
                           </IconButton>
                         </Tooltip>
                       </>
-                      )}
+                    )}
                     <Tooltip title="More options">
-                      <IconButton onClick={(e) => handleMoveClick(item, e)} size="small">
+                      <IconButton onClick={e => handleMoveClick(item, e)} size="small">
                         <MoreVertIcon />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  </ListItem>
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </ListItem>
               ))}
             </List>
           )}

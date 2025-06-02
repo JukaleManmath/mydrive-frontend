@@ -262,7 +262,7 @@ function Dashboard() {
   };
 
   const handleFolderClick = async (folder) => {
-    const newPath = [...path, { id: folder.id, filename: folder.filename }];
+    const newPath = [...path, { id: folder.id, name: folder.name }];
     await updatePath(newPath);
   };
 

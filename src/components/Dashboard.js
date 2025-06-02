@@ -767,7 +767,7 @@ function Dashboard() {
                     },
                   }}
                 >
-                  {folder.filename}
+                  {folder.name}
                 </Link>
                 {index < path.length - 1 && <Typography component="span" sx={{ mx: 1 }}>/</Typography>}
               </React.Fragment>
@@ -845,7 +845,7 @@ function Dashboard() {
                         variant="body1" 
                         noWrap
                       >
-                        {item.filename}
+                        {item.name}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         {(item.type === 'folder' || item.is_folder || item.mime_type === 'folder') ? 'Folder' : (item.file_type || 'File')}
@@ -988,7 +988,7 @@ function Dashboard() {
                     onClick={() => handleFileClick(file)}
                   >
                     <Typography variant="subtitle1" sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {file.filename}
+                      {file.name}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Size: {Math.round(file.file_size / 1024)} KB • Type: {file.file_type} • Permission: {file.permission === 'edit' ? 'Can Edit' : 'Read Only'}
@@ -1002,7 +1002,7 @@ function Dashboard() {
                         aria-label="download"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDownload(file.id, file.filename);
+                          handleDownload(file.id, file.name);
                         }}
                         sx={{
                           color: theme.palette.primary.main,
@@ -1055,7 +1055,7 @@ function Dashboard() {
         </DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete {itemToDelete?.type === 'folder' ? 'folder' : 'file'} "{itemToDelete?.filename}"?
+            Are you sure you want to delete {itemToDelete?.type === 'folder' ? 'folder' : 'file'} "{itemToDelete?.name}"?
             {itemToDelete?.type === 'folder' && ' This will also delete all contents inside the folder.'}
           </Typography>
         </DialogContent>
@@ -1164,7 +1164,7 @@ function Dashboard() {
                   }}
                 >
                   <FolderIcon sx={{ color: theme.palette.warning.main, mr: 2 }} />
-                  <Typography>{folder.filename}</Typography>
+                  <Typography>{folder.name}</Typography>
                 </ListItem>
               ))}
 
@@ -1195,7 +1195,7 @@ function Dashboard() {
               // Render folders grouped by parent
               return Object.entries(foldersByParent).map(([parentId, folders]) => {
                 const parentFolder = allFiles.find(f => f.id === parseInt(parentId));
-                const parentName = parentFolder ? parentFolder.filename : 'Root';
+                const parentName = parentFolder ? parentFolder.name : 'Root';
 
                 return (
                   <Box key={parentId} sx={{ mb: 2 }}>
@@ -1220,7 +1220,7 @@ function Dashboard() {
                         }}
                       >
                         <FolderIcon sx={{ color: theme.palette.warning.main, mr: 2 }} />
-                        <Typography>{folder.filename}</Typography>
+                        <Typography>{folder.name}</Typography>
                       </ListItem>
                     ))}
                   </Box>
@@ -1269,7 +1269,7 @@ function Dashboard() {
         <DialogTitle>Upload New Version</DialogTitle>
         <DialogContent>
           <Typography variant="body1" sx={{ mb: 2 }}>
-            Select a new version of "{selectedFileForNewVersion?.filename}"
+            Select a new version of "{selectedFileForNewVersion?.name}"
           </Typography>
           <Button
             variant="contained"

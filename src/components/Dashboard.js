@@ -45,6 +45,8 @@ import PreviewModal from './PreviewModal';
 import { ShareDialog } from './ShareDialog';
 import VersionHistoryDialog from './VersionHistoryDialog';
 
+const API_URL = process.env.REACT_APP_API_URL || 'https://mydrive-backend-oi3r.onrender.com';
+
 function Dashboard() {
   const [files, setFiles] = useState([]);
   const [filteredFiles, setFilteredFiles] = useState([]);
@@ -87,7 +89,7 @@ function Dashboard() {
           // Verify the folder still exists before navigating
           const currentFolderId = event.state.path[event.state.path.length - 1].id;
           if (currentFolderId !== null) {
-            const response = await axios.get(`http://localhost:8000/files/${currentFolderId}`, {
+            const response = await axios.get(`${API_URL}/files/${currentFolderId}`, {
               headers: { Authorization: `Bearer ${token}` }
             });
             if (!response.data) {
@@ -120,7 +122,7 @@ function Dashboard() {
       // Verify the folder exists before updating path
       const currentFolderId = newPath[newPath.length - 1].id;
       if (currentFolderId !== null) {
-        const response = await axios.get(`http://localhost:8000/files/${currentFolderId}`, {
+        const response = await axios.get(`${API_URL}/files/${currentFolderId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!response.data) {
@@ -143,14 +145,19 @@ function Dashboard() {
   const fetchFiles = useCallback(async () => {
     const currentFolderId = path.length > 0 ? path[path.length - 1].id : null;
     try {
-      const response = await axios.get('http://localhost:8000/files/', {
+      const response = await axios.get(`${API_URL}/files/`, {
         params: { parent_id: currentFolderId },
         headers: { Authorization: `Bearer ${token}` },
       });
-      setFiles(response.data);
+      setFiles(response.data || []);
+      setFilteredFiles(response.data || []);
+      setError(null);
       setLoading(false);
     } catch (err) {
+      console.error('Error fetching files:', err);
       setError('Failed to fetch files');
+      setFiles([]);
+      setFilteredFiles([]);
       setLoading(false);
     }
   }, [token, path]);
@@ -276,7 +283,7 @@ function Dashboard() {
 
     try {
       const currentFolderId = path.length > 0 ? path[path.length - 1].id : null;
-      await axios.post('http://localhost:8000/folders/', 
+      await axios.post(`${API_URL}/folders/`, 
         { filename: newFolderName, parent_id: currentFolderId },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -317,7 +324,7 @@ function Dashboard() {
     }
 
     try {
-      await axios.post('http://localhost:8000/files/upload', formData, {
+      await axios.post(`${API_URL}/files/upload`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
@@ -354,7 +361,7 @@ function Dashboard() {
     setItemToDelete(null);
 
     try {
-      await axios.delete(`http://localhost:8000/files/${itemId}`, {
+      await axios.delete(`${API_URL}/files/${itemId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchFiles();
@@ -408,7 +415,7 @@ function Dashboard() {
 
   const handleDownload = async (fileId, filename) => {
     try {
-      const response = await axios.get(`http://localhost:8000/files/${fileId}/download`, {
+      const response = await axios.get(`${API_URL}/files/${fileId}/download`, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob',
       });
@@ -570,7 +577,7 @@ function Dashboard() {
       formData.append('comment', 'New version uploaded');
 
       await axios.post(
-        `http://localhost:8000/files/${selectedFileForNewVersion.id}/versions`,
+        `${API_URL}/files/${selectedFileForNewVersion.id}/versions`,
         formData,
         {
           headers: {
@@ -763,48 +770,48 @@ function Dashboard() {
           ) : (
             <List sx={{ p: 0 }}>
               {filteredFiles.map((item, index) => (
-                <ListItem
+                  <ListItem
                   key={item.id}
-                  sx={{
-                    py: 2.5,
-                    px: 3,
-                    '&:hover': {
-                      backgroundColor: 'action.hover',
-                    },
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 2,
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => handleFileClick(item)}
-                >
-                  <Box 
-                    sx={{ 
-                      display: 'flex', 
+                    sx={{
+                      py: 2.5,
+                      px: 3,
+                      '&:hover': {
+                        backgroundColor: 'action.hover',
+                      },
+                      display: 'flex',
                       alignItems: 'center',
-                      flex: 1,
-                      minWidth: 0,
+                      gap: 2,
+                      cursor: 'pointer',
                     }}
+                    onClick={() => handleFileClick(item)}
                   >
-                    <Box sx={{ flexShrink: 0, mr: 2 }}>
-                      {item.type === 'folder' ? (
-                        <FolderIcon sx={{ color: theme.palette.warning.main, fontSize: 32 }} />
-                      ) : (
-                        getFileIcon()
-                      )}
-                    </Box>
-                    <Box sx={{ minWidth: 0, flex: 1 }}>
-                      <Typography 
+                    <Box 
+                      sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        flex: 1,
+                        minWidth: 0,
+                      }}
+                    >
+                      <Box sx={{ flexShrink: 0, mr: 2 }}>
+                        {item.type === 'folder' ? (
+                          <FolderIcon sx={{ color: theme.palette.warning.main, fontSize: 32 }} />
+                        ) : (
+                          getFileIcon()
+                        )}
+                      </Box>
+                      <Box sx={{ minWidth: 0, flex: 1 }}>
+                        <Typography 
                         variant="body1" 
                         noWrap
-                      >
-                        {item.filename}
-                      </Typography>
+                        >
+                          {item.filename}
+                        </Typography>
                       <Typography variant="caption" color="text.secondary">
                         {item.type === 'folder' ? 'Folder' : item.file_type || 'File'}
-                      </Typography>
+                          </Typography>
+                      </Box>
                     </Box>
-                  </Box>
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     {item.type !== 'folder' && (
                       <>
@@ -818,21 +825,21 @@ function Dashboard() {
                         </Tooltip>
                         <Tooltip title="Download">
                           <IconButton onClick={(e) => {
-                            e.stopPropagation();
-                            handleDownload(item.id, item.filename);
+                              e.stopPropagation();
+                              handleDownload(item.id, item.filename);
                           }} size="small">
                             <DownloadIcon />
                           </IconButton>
                         </Tooltip>
                       </>
-                    )}
+                      )}
                     <Tooltip title="More options">
                       <IconButton onClick={(e) => handleMoveClick(item, e)} size="small">
                         <MoreVertIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </ListItem>
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </ListItem>
               ))}
             </List>
           )}

@@ -641,10 +641,22 @@ function Dashboard() {
     }
   };
 
-  // Helper to recursively render folder tree
+  // Helper to recursively render all folders except the one being moved and its descendants
+  const isDescendant = (folderId, excludeId) => {
+    if (folderId === excludeId) return true;
+    const folder = allFiles.find(f => f.id === folderId);
+    if (!folder || folder.parent_id == null) return false;
+    return isDescendant(folder.parent_id, excludeId);
+  };
+
   const renderFolderTree = (parentId, excludeId, level = 0) => {
     return allFiles
-      .filter(f => f.type === 'folder' && f.id !== excludeId && f.parent_id === parentId)
+      .filter(f => {
+        if (f.type !== 'folder') return false;
+        if (f.id === excludeId) return false;
+        if (excludeId && isDescendant(f.id, excludeId)) return false;
+        return f.parent_id === parentId;
+      })
       .map(folder => (
         <Box key={folder.id} sx={{ ml: level * 2 }}>
           <ListItem

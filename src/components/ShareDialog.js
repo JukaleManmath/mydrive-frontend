@@ -38,9 +38,11 @@ export const ShareDialog = ({ open, onClose, onSubmit, fileName }) => {
         try {
             setLoading(true);
             setError('');
+            console.log('Sharing file with:', email, 'Permission:', permission);
             await onSubmit(email, permission);
             handleClose();
         } catch (err) {
+            console.error('Share error:', err);
             setError(err.message || (err.response?.data?.detail) || 'Failed to share file');
         } finally {
             setLoading(false);

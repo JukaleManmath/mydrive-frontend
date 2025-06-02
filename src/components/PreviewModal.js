@@ -139,6 +139,7 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
                     </Box>
                 );
             }
+            // Fallback for other binary types
             return (
                 <Box sx={{ width: '100%', height: '60vh', overflow: 'auto', background: '#f8f8f8', borderRadius: 2, p: 1 }}>
                     <iframe src={previewUrl} style={{ width: '100%', height: '100%', border: 'none', minHeight: 400 }} title={displayName} />
@@ -152,6 +153,7 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
                 </Box>
             );
         }
+        // Fallback for unsupported types
         return (
             <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
                 <Typography color="text.secondary">Preview not available for this file type</Typography>

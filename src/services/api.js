@@ -167,33 +167,39 @@ export const getFileContent = async (fileId) => {
             throw new Error('No authentication token found');
         }
 
-        const response = await api.get(`/files/${fileId}/content`);
+        // Use fetch directly to handle both text and binary
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://mydrive-backend-oi3r.onrender.com'}/files/${fileId}/content`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
 
-        if (!response.data) {
-            throw new Error('No data received from server');
-        }
-
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching file content:', error);
-        if (error.response) {
-            if (error.response.status === 401) {
-                // Clear token and redirect to login if unauthorized
+        if (!response.ok) {
+            if (response.status === 401) {
                 localStorage.removeItem('token');
                 window.location.href = '/login';
                 throw new Error('Authentication failed. Please log in again.');
-            } else if (error.response.status === 404) {
+            } else if (response.status === 404) {
                 throw new Error('File not found');
-            } else if (error.response.status === 500) {
-                const detail = error.response.data?.detail || 'Server error occurred while fetching file content';
-                throw new Error(detail);
+            } else if (response.status === 500) {
+                throw new Error('Server error occurred while fetching file content');
             }
-            throw new Error(error.response.data?.detail || 'Failed to fetch file content');
-        } else if (error.request) {
-            throw new Error('No response from server. Please check your connection.');
-        } else {
-            throw new Error(error.message || 'Failed to fetch file content');
+            throw new Error('Failed to fetch file content');
         }
+
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.startsWith('text/')) {
+            const content = await response.text();
+            return { content };
+        } else {
+            // For binary files (images, pdf, etc.)
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            return { url };
+        }
+    } catch (error) {
+        console.error('Error fetching file content:', error);
+        throw new Error(error.message || 'Failed to fetch file content');
     }
 };
 

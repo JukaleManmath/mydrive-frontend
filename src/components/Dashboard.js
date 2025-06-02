@@ -233,27 +233,13 @@ function Dashboard() {
       const filesInCurrentFolder = files.filter(file => file.parent_id === currentFolderId);
       setFilteredFiles(filesInCurrentFolder);
     } else {
-      // When searching, if we're in a folder, search only within that folder
-      const currentFolderId = path.length > 0 ? path[path.length - 1].id : null;
+      // When searching, search across all files
       const query = searchQuery.toLowerCase();
-      
-      if (currentFolderId !== null) {
-        // Search within current folder using files array
-        const filtered = files.filter(file => 
-          file.parent_id === currentFolderId && (
-            file.filename.toLowerCase().includes(query) ||
-            (file.file_type && file.file_type.toLowerCase().includes(query))
-          )
-        );
-        setFilteredFiles(filtered);
-      } else {
-        // Search across all files when at root
-        const filtered = allFiles.filter(file => 
-          file.filename.toLowerCase().includes(query) ||
-          (file.file_type && file.file_type.toLowerCase().includes(query))
-        );
-        setFilteredFiles(filtered);
-      }
+      const filtered = allFiles.filter(file => 
+        file.filename.toLowerCase().includes(query) ||
+        (file.file_type && file.file_type.toLowerCase().includes(query))
+      );
+      setFilteredFiles(filtered);
     }
   }, [searchQuery, files, allFiles, path]);
 
@@ -450,24 +436,30 @@ function Dashboard() {
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob',
       });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      
+      // Get the file type from the response headers
+      const contentType = response.headers['content-type'];
+      const blob = new Blob([response.data], { type: contentType });
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url);
+      
       setSnackbar({
         open: true,
         message: 'File downloaded successfully',
-        severity: 'success',
+        severity: 'success'
       });
     } catch (err) {
       console.error('Error downloading file:', err);
       setSnackbar({
         open: true,
-        message: 'Failed to download file',
-        severity: 'error',
+        message: err.response?.data?.detail || 'Failed to download file',
+        severity: 'error'
       });
     }
   };
@@ -658,17 +650,18 @@ function Dashboard() {
   };
 
   const renderFolderTree = (parentId, excludeId, level = 0) => {
-    const filtered = allFiles
-      .filter(f => {
-        if (f.type !== 'folder') return false;
-        if (f.id === excludeId) return false;
-        if (excludeId && isDescendant(f.id, excludeId)) return false;
-        return f.parent_id === parentId;
-      });
-    if (moveDialogOpen && level === 0) {
-      console.log('DEBUG: Filtered move destinations (root level):', filtered);
-    }
-    return filtered.map(folder => (
+    const folders = allFiles.filter(f => {
+      // Only include folders
+      if (f.type !== 'folder') return false;
+      // Exclude the folder being moved
+      if (f.id === excludeId) return false;
+      // Exclude descendants of the folder being moved
+      if (excludeId && isDescendant(f.id, excludeId)) return false;
+      // Match parent_id
+      return f.parent_id === parentId;
+    });
+
+    return folders.map(folder => (
       <Box key={folder.id} sx={{ ml: level * 2 }}>
         <ListItem
           button

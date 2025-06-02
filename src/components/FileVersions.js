@@ -49,7 +49,7 @@ function FileVersions({ file, onVersionRestored }) {
             const response = await axios.get(
                 `http://localhost:8000/files/${file.id}/versions`,
                 {
-                    headers: { Authorization: `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${token}` }
                 }
             );
             setVersions(response.data);
@@ -236,66 +236,66 @@ function FileVersions({ file, onVersionRestored }) {
                                 <ListItemText
                                     primary={
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <Typography variant="subtitle1">
-                                                Version {version.version_number}
+                                    <Typography variant="subtitle1">
+                                        Version {version.version_number}
                                             </Typography>
-                                            {version.is_current && (
-                                                <Typography
+                                        {version.is_current && (
+                                            <Typography
                                                     variant="caption"
-                                                    sx={{
+                                                sx={{
                                                         bgcolor: 'primary.main',
                                                         color: 'primary.contrastText',
                                                         px: 1,
                                                         py: 0.5,
                                                         borderRadius: 1,
                                                         fontSize: '0.75rem'
-                                                    }}
-                                                >
+                                                }}
+                                            >
                                                     Current
-                                                </Typography>
-                                            )}
+                                            </Typography>
+                                        )}
                                         </Box>
                                     }
                                     secondary={
                                         <Box sx={{ mt: 0.5 }}>
                                             <Typography variant="body2" color="text.secondary">
                                                 {formatDate(version.created_at)}
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary">
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
                                                 Size: {formatFileSize(version.file_size)}
-                                            </Typography>
-                                            {version.comment && (
-                                                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                                                    {version.comment}
-                                                </Typography>
-                                            )}
-                                        </Box>
+                                    </Typography>
+                                    {version.comment && (
+                                        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                                            {version.comment}
+                                        </Typography>
+                                    )}
+                                </Box>
                                     }
                                 />
                                 <ListItemSecondaryAction>
                                     {!version.is_current && (
                                         <>
-                                            <IconButton
+                                                <IconButton
                                                 edge="end"
-                                                onClick={() => {
-                                                    setSelectedVersion(version);
-                                                    setRestoreDialogOpen(true);
-                                                }}
+                                                    onClick={() => {
+                                                        setSelectedVersion(version);
+                                                        setRestoreDialogOpen(true);
+                                                    }}
                                                 disabled={loading}
                                                 sx={{ mr: 1 }}
-                                            >
-                                                <RestoreIcon />
-                                            </IconButton>
-                                            <IconButton
+                                                >
+                                                    <RestoreIcon />
+                                                </IconButton>
+                                                <IconButton
                                                 edge="end"
-                                                onClick={() => {
-                                                    setSelectedVersion(version);
-                                                    setDeleteDialogOpen(true);
-                                                }}
+                                                    onClick={() => {
+                                                        setSelectedVersion(version);
+                                                        setDeleteDialogOpen(true);
+                                                    }}
                                                 disabled={loading}
-                                            >
-                                                <DeleteIcon />
-                                            </IconButton>
+                                                >
+                                                    <DeleteIcon />
+                                                </IconButton>
                                         </>
                                     )}
                                 </ListItemSecondaryAction>

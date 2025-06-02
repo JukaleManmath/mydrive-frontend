@@ -38,12 +38,11 @@ export const ShareDialog = ({ open, onClose, onSubmit, fileName }) => {
         try {
             setLoading(true);
             setError('');
-            console.log('DEBUG: Sharing file with:', email, 'Permission:', permission);
             await onSubmit(email, permission);
             handleClose();
         } catch (err) {
-            console.error('DEBUG: Share error:', err);
-            setError(err.message || (err.response?.data?.detail) || 'Failed to share file');
+            console.error('Share error:', err);
+            setError(err.response?.data?.detail || err.message || 'Failed to share file');
         } finally {
             setLoading(false);
         }
@@ -58,50 +57,101 @@ export const ShareDialog = ({ open, onClose, onSubmit, fileName }) => {
     };
 
     return (
-        <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-            <DialogTitle>Share "{fileName}"</DialogTitle>
-                <DialogContent>
+        <Dialog 
+            open={open} 
+            onClose={handleClose} 
+            maxWidth="sm" 
+            fullWidth
+            PaperProps={{
+                sx: {
+                    borderRadius: 2,
+                    boxShadow: theme.shadows[24]
+                }
+            }}
+        >
+            <DialogTitle sx={{ 
+                borderBottom: `1px solid ${theme.palette.divider}`,
+                pb: 2
+            }}>
+                Share "{fileName}"
+            </DialogTitle>
+            <DialogContent sx={{ mt: 2 }}>
                 {error && (
-                    <Alert severity="error" sx={{ mb: 2 }}>
+                    <Alert 
+                        severity="error" 
+                        sx={{ 
+                            mb: 2,
+                            borderRadius: 1
+                        }}
+                    >
                         {error}
                     </Alert>
                 )}
-                <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-                        <TextField
-                            fullWidth
-                            label="Email Address"
-                            value={email}
+                <Box component="form" onSubmit={handleSubmit}>
+                    <TextField
+                        fullWidth
+                        label="Email Address"
+                        value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         margin="normal"
                         required
-                            error={!!error}
-                        />
-                    <FormControl fullWidth margin="normal">
+                        error={!!error}
+                        disabled={loading}
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                borderRadius: 1
+                            }
+                        }}
+                    />
+                    <FormControl 
+                        fullWidth 
+                        margin="normal"
+                        disabled={loading}
+                    >
                         <InputLabel>Permission</InputLabel>
                         <Select
                             value={permission}
                             onChange={(e) => setPermission(e.target.value)}
                             label="Permission"
+                            sx={{
+                                borderRadius: 1
+                            }}
                         >
                             <MenuItem value="read">Read Only</MenuItem>
                             <MenuItem value="edit">Can Edit</MenuItem>
                         </Select>
                     </FormControl>
-                    </Box>
-                </DialogContent>
-            <DialogActions>
-                <Button onClick={handleClose} disabled={loading}>
-                        Cancel
-                    </Button>
-                    <Button 
+                </Box>
+            </DialogContent>
+            <DialogActions sx={{ 
+                px: 3, 
+                pb: 3,
+                borderTop: `1px solid ${theme.palette.divider}`,
+                pt: 2
+            }}>
+                <Button 
+                    onClick={handleClose} 
+                    disabled={loading}
+                    sx={{ 
+                        textTransform: 'none',
+                        borderRadius: 1
+                    }}
+                >
+                    Cancel
+                </Button>
+                <Button 
                     onClick={handleSubmit}
-                        variant="contained"
+                    variant="contained"
                     disabled={loading}
                     startIcon={loading ? <CircularProgress size={20} /> : null}
-                    >
-                        Share
-                    </Button>
-                </DialogActions>
+                    sx={{ 
+                        textTransform: 'none',
+                        borderRadius: 1
+                    }}
+                >
+                    Share
+                </Button>
+            </DialogActions>
         </Dialog>
     );
 }; 

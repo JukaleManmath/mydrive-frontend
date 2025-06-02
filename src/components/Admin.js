@@ -19,6 +19,7 @@ import {
   Alert,
   IconButton,
   Snackbar,
+  CircularProgress,
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
@@ -38,13 +39,19 @@ function Admin() {
 
   const fetchUsers = async () => {
     try {
+      setLoading(true);
       const response = await axios.get(`${API_URL}/admin/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(response.data);
       setError(null);
     } catch (err) {
-      setError('Failed to fetch users');
+      setError(err.response?.data?.detail || 'Failed to fetch users');
+      setSnackbar({
+        open: true,
+        message: err.response?.data?.detail || 'Failed to fetch users',
+        severity: 'error',
+      });
     } finally {
       setLoading(false);
     }
@@ -85,7 +92,7 @@ function Admin() {
     } catch (err) {
       setSnackbar({
         open: true,
-        message: 'Failed to update user',
+        message: err.response?.data?.detail || 'Failed to update user',
         severity: 'error',
       });
     }
@@ -106,7 +113,7 @@ function Admin() {
       } catch (err) {
         setSnackbar({
           open: true,
-          message: 'Failed to delete user',
+          message: err.response?.data?.detail || 'Failed to delete user',
           severity: 'error',
         });
       }
@@ -115,8 +122,8 @@ function Admin() {
 
   if (loading) {
     return (
-      <Container>
-        <Typography>Loading...</Typography>
+      <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <CircularProgress />
       </Container>
     );
   }
@@ -124,7 +131,7 @@ function Admin() {
   if (error) {
     return (
       <Container>
-        <Alert severity="error">{error}</Alert>
+        <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>
       </Container>
     );
   }

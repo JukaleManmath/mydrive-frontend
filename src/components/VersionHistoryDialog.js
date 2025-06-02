@@ -23,6 +23,7 @@ import {
     Delete as DeleteIcon,
 } from '@mui/icons-material';
 import { getFileVersions, restoreVersion, deleteFileVersion, getVersionContent } from '../services/api';
+import { useTheme } from '@mui/material/styles';
 
 function VersionHistoryDialog({ open, onClose, file, onVersionRestored }) {
     const [versions, setVersions] = useState([]);
@@ -35,6 +36,7 @@ function VersionHistoryDialog({ open, onClose, file, onVersionRestored }) {
     const [currentVersionNumber, setCurrentVersionNumber] = useState(null);
     const [restoreLoading, setRestoreLoading] = useState(false);
     const [lastRestoredVersion, setLastRestoredVersion] = useState(null);
+    const theme = useTheme();
 
     useEffect(() => {
         if (open && file) {
@@ -45,54 +47,15 @@ function VersionHistoryDialog({ open, onClose, file, onVersionRestored }) {
     const loadVersions = async () => {
         try {
             setLoading(true);
-            const data = await getFileVersions(file.id);
-            // Sort versions by version number in descending order
-            const sortedVersions = data.sort((a, b) => b.version_number - a.version_number);
-            setVersions(sortedVersions);
-            // Set current version number (highest version number)
-            if (sortedVersions.length > 0) {
-                setCurrentVersionNumber(sortedVersions[0].version_number);
-            }
             setError(null);
+            const response = await getFileVersions(file.id);
+            setVersions(response);
+            setCurrentVersionNumber(response[0]?.version_number || null);
         } catch (err) {
-            setError('Failed to load version history');
             console.error('Error loading versions:', err);
+            setError(err.response?.data?.detail || err.message || 'Failed to load version history');
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleRestore = async (version) => {
-        try {
-            setRestoreLoading(true);
-            setError(null);
-            await restoreVersion(file.id, version.version_number);
-            setLastRestoredVersion(version.version_number);
-            await loadVersions();
-            onVersionRestored();
-            onClose();
-        } catch (err) {
-            setError('Failed to restore version: ' + (err.message || 'Unknown error'));
-            console.error('Error restoring version:', err);
-        } finally {
-            setRestoreLoading(false);
-        }
-    };
-
-    const handleDelete = async (version) => {
-        try {
-            if (version.version_number === currentVersionNumber) {
-                setError('Cannot delete the current version');
-                return;
-            }
-            await deleteFileVersion(file.id, version.version_number);
-            await loadVersions();
-            setDeleteConfirm(null);
-            setSelectedVersion(null);
-            setPreviewContent(null);
-        } catch (err) {
-            setError('Failed to delete version');
-            console.error('Error deleting version:', err);
         }
     };
 
@@ -103,22 +66,56 @@ function VersionHistoryDialog({ open, onClose, file, onVersionRestored }) {
             setSelectedVersion(version);
             setPreviewContent(null);
             
-            // Get the version content
             const response = await getVersionContent(file.id, version.version_number);
             if (response.content) {
                 setPreviewContent(response.content);
             } else if (response.url) {
-                // For binary files, show a message
                 setPreviewContent('This is a binary file. Please download to view.');
             } else {
                 throw new Error('No content available');
             }
         } catch (err) {
-            setError('Failed to load preview: ' + (err.message || 'Unknown error'));
             console.error('Error loading preview:', err);
+            setError(err.response?.data?.detail || err.message || 'Failed to load preview');
             setPreviewContent(null);
         } finally {
             setPreviewLoading(false);
+        }
+    };
+
+    const handleRestore = async (version) => {
+        try {
+            setRestoreLoading(true);
+            setError(null);
+            await restoreVersion(file.id, version.version_number);
+            setLastRestoredVersion(version.version_number);
+            onVersionRestored();
+            setSnackbar({
+                open: true,
+                message: 'Version restored successfully',
+                severity: 'success'
+            });
+        } catch (err) {
+            console.error('Error restoring version:', err);
+            setError(err.response?.data?.detail || err.message || 'Failed to restore version');
+        } finally {
+            setRestoreLoading(false);
+        }
+    };
+
+    const handleDelete = async (version) => {
+        try {
+            await deleteFileVersion(file.id, version.version_number);
+            setDeleteConfirm(null);
+            loadVersions();
+            setSnackbar({
+                open: true,
+                message: 'Version deleted successfully',
+                severity: 'success'
+            });
+        } catch (err) {
+            console.error('Error deleting version:', err);
+            setError(err.response?.data?.detail || err.message || 'Failed to delete version');
         }
     };
 
@@ -132,14 +129,28 @@ function VersionHistoryDialog({ open, onClose, file, onVersionRestored }) {
             onClose={onClose}
             maxWidth="md"
             fullWidth
-            PaperProps={{ sx: { borderRadius: 2 } }}
+            PaperProps={{ 
+                sx: { 
+                    borderRadius: 2,
+                    boxShadow: theme.shadows[24]
+                } 
+            }}
         >
-            <DialogTitle>
+            <DialogTitle sx={{ 
+                borderBottom: `1px solid ${theme.palette.divider}`,
+                pb: 2
+            }}>
                 Version History - {file?.filename}
             </DialogTitle>
-            <DialogContent>
+            <DialogContent sx={{ mt: 2 }}>
                 {error && (
-                    <Alert severity="error" sx={{ mb: 2 }}>
+                    <Alert 
+                        severity="error" 
+                        sx={{ 
+                            mb: 2,
+                            borderRadius: 1
+                        }}
+                    >
                         {error}
                     </Alert>
                 )}
@@ -151,73 +162,62 @@ function VersionHistoryDialog({ open, onClose, file, onVersionRestored }) {
                 ) : (
                     <Box sx={{ display: 'flex', height: '400px' }}>
                         {/* Version List */}
-                        <Box sx={{ width: '40%', borderRight: 1, borderColor: 'divider' }}>
-                            <List sx={{ p: 0 }}>
-                                {versions.map((version, index) => (
-                                    <React.Fragment key={version.id}>
-                                        <ListItem
-                                            sx={{
-                                                bgcolor: selectedVersion?.id === version.id ? 'action.selected' : 'transparent',
+                        <Box sx={{ width: '40%', borderRight: `1px solid ${theme.palette.divider}`, p: 2 }}>
+                            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                                Versions
+                            </Typography>
+                            <List sx={{ overflow: 'auto', maxHeight: '350px' }}>
+                                {versions.map((version) => (
+                                    <ListItem
+                                        key={version.version_number}
+                                        button
+                                        selected={selectedVersion?.version_number === version.version_number}
+                                        onClick={() => handlePreview(version)}
+                                        sx={{
+                                            borderRadius: 1,
+                                            mb: 1,
+                                            '&.Mui-selected': {
+                                                bgcolor: 'primary.light',
                                                 '&:hover': {
-                                                    bgcolor: 'action.hover',
-                                                },
-                                            }}
-                                        >
-                                            <ListItemText
-                                                primary={
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                        <Typography>
-                                                            Version {version.version_number}
-                                                        </Typography>
-                                                        {version.version_number === currentVersionNumber && (
-                                                            <Chip 
-                                                                label="Current" 
-                                                                size="small" 
-                                                                color="primary" 
-                                                                variant="outlined"
-                                                            />
-                                                        )}
-                                                    </Box>
+                                                    bgcolor: 'primary.light',
                                                 }
-                                                secondary={formatDate(version.created_at)}
-                                            />
-                                            <Box sx={{ display: 'flex', gap: 1 }}>
-                                                <Tooltip title="Preview">
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => handlePreview(version)}
-                                                        disabled={previewLoading}
-                                                    >
-                                                        <PreviewIcon />
-                                                    </IconButton>
-                                                </Tooltip>
-                                                {version.version_number !== lastRestoredVersion && (
-                                                    <>
-                                                        <Tooltip title="Restore">
-                                                            <IconButton
-                                                                size="small"
-                                                                onClick={() => handleRestore(version)}
-                                                                disabled={restoreLoading}
-                                                            >
-                                                                <RestoreIcon />
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                        <Tooltip title="Delete">
-                                                            <IconButton
-                                                                size="small"
-                                                                onClick={() => setDeleteConfirm(version)}
-                                                                color="error"
-                                                                disabled={restoreLoading}
-                                                            >
-                                                                <DeleteIcon />
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                    </>
-                                                )}
-                                            </Box>
-                                        </ListItem>
-                                        {index < versions.length - 1 && <Divider />}
-                                    </React.Fragment>
+                                            }
+                                        }}
+                                    >
+                                        <ListItemText
+                                            primary={`Version ${version.version_number}`}
+                                            secondary={formatDate(version.created_at)}
+                                        />
+                                        <Box sx={{ display: 'flex', gap: 1 }}>
+                                            {version.version_number !== currentVersionNumber && (
+                                                <>
+                                                    <Tooltip title="Restore">
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleRestore(version);
+                                                            }}
+                                                            disabled={restoreLoading}
+                                                        >
+                                                            <RestoreIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                    <Tooltip title="Delete">
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setDeleteConfirm(version);
+                                                            }}
+                                                        >
+                                                            <DeleteIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </>
+                                            )}
+                                        </Box>
+                                    </ListItem>
                                 ))}
                             </List>
                         </Box>
@@ -273,6 +273,11 @@ function VersionHistoryDialog({ open, onClose, file, onVersionRestored }) {
                         onClose={() => setDeleteConfirm(null)}
                         maxWidth="xs"
                         fullWidth
+                        PaperProps={{
+                            sx: {
+                                borderRadius: 2
+                            }
+                        }}
                     >
                         <DialogTitle>Delete Version</DialogTitle>
                         <DialogContent>
@@ -281,12 +286,24 @@ function VersionHistoryDialog({ open, onClose, file, onVersionRestored }) {
                                 This action cannot be undone.
                             </Typography>
                         </DialogContent>
-                        <DialogActions>
-                            <Button onClick={() => setDeleteConfirm(null)}>Cancel</Button>
+                        <DialogActions sx={{ px: 3, pb: 3 }}>
+                            <Button 
+                                onClick={() => setDeleteConfirm(null)}
+                                sx={{ 
+                                    textTransform: 'none',
+                                    borderRadius: 1
+                                }}
+                            >
+                                Cancel
+                            </Button>
                             <Button 
                                 onClick={() => handleDelete(deleteConfirm)} 
                                 color="error"
                                 variant="contained"
+                                sx={{ 
+                                    textTransform: 'none',
+                                    borderRadius: 1
+                                }}
                             >
                                 Delete
                             </Button>
@@ -294,10 +311,18 @@ function VersionHistoryDialog({ open, onClose, file, onVersionRestored }) {
                     </Dialog>
                 )}
             </DialogContent>
-            <DialogActions sx={{ px: 3, pb: 3 }}>
+            <DialogActions sx={{ 
+                px: 3, 
+                pb: 3,
+                borderTop: `1px solid ${theme.palette.divider}`,
+                pt: 2
+            }}>
                 <Button
                     onClick={onClose}
-                    sx={{ textTransform: 'none' }}
+                    sx={{ 
+                        textTransform: 'none',
+                        borderRadius: 1
+                    }}
                 >
                     Close
                 </Button>

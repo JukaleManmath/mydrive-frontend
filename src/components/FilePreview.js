@@ -90,7 +90,7 @@ const PreviewModal = ({ open, onClose, file, fileUrl, onShare }) => {
             });
             
             if (!response.ok) throw new Error('Download failed');
-            
+
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');

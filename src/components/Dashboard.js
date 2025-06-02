@@ -270,49 +270,45 @@ function Dashboard() {
     await updatePath(newPath);
   };
 
+  const handleCloseCreateFolderDialog = () => {
+    setCreateFolderDialogOpen(false);
+    setNewFolderName('');
+  };
+
   const handleCreateFolderClick = () => {
     setCreateFolderDialogOpen(true);
   };
 
   const handleCreateFolderSubmit = async () => {
     if (!newFolderName.trim()) {
-      setSnackbar({
-        open: true,
-        message: 'Folder name cannot be empty.',
-        severity: 'warning',
-      });
+      setSnackbar({ open: true, message: 'Please enter a folder name', severity: 'error' });
       return;
     }
 
     try {
-      const currentFolderId = path.length > 0 ? path[path.length - 1].id : null;
-      const response = await axios.post(`${API_URL}/folders/`, 
+      const response = await axios.post(
+        `${API_URL}/folders/`,
         { name: newFolderName, parent_id: currentFolderId },
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         }
       );
-      
+
       if (response.data) {
+        setSnackbar({ open: true, message: 'Folder created successfully', severity: 'success' });
         setNewFolderName('');
-        setCreateFolderDialogOpen(false);
-        fetchFiles();
-        setSnackbar({
-          open: true,
-          message: 'Folder created successfully',
-          severity: 'success',
-        });
+        handleCloseCreateFolderDialog();
+        fetchFiles(); // Refresh the file list
       }
-    } catch (err) {
-      console.error('Error creating folder:', err);
-      let errorMessage = 'Failed to create folder';
-      if (err.response?.data?.detail) {
-        errorMessage = `Failed to create folder: ${err.response.data.detail}`;
-      }
+    } catch (error) {
+      console.error('Error creating folder:', error);
       setSnackbar({
         open: true,
-        message: errorMessage,
-        severity: 'error',
+        message: error.response?.data?.detail || 'Error creating folder',
+        severity: 'error'
       });
     }
   };
@@ -878,8 +874,13 @@ function Dashboard() {
         </CardContent>
       </Card>
 
-      <Dialog open={createFolderDialogOpen} onClose={() => setCreateFolderDialogOpen(false)} PaperProps={{ sx: { borderRadius: 2, minWidth: 400 } }}>
-        <DialogTitle>Create New Folder</DialogTitle>
+      <Dialog 
+        open={createFolderDialogOpen} 
+        onClose={handleCloseCreateFolderDialog}
+        aria-labelledby="create-folder-dialog-title"
+        disableEnforceFocus
+      >
+        <DialogTitle id="create-folder-dialog-title">Create New Folder</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
@@ -894,14 +895,11 @@ function Dashboard() {
                 handleCreateFolderSubmit();
               }
             }}
-            sx={{ mt: 2 }}
           />
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button onClick={() => setCreateFolderDialogOpen(false)} sx={{ textTransform: 'none' }}>
-            Cancel
-          </Button>
-          <Button onClick={handleCreateFolderSubmit} variant="contained" sx={{ textTransform: 'none' }}>
+        <DialogActions>
+          <Button onClick={handleCloseCreateFolderDialog}>Cancel</Button>
+          <Button onClick={handleCreateFolderSubmit} variant="contained" color="primary">
             Create
           </Button>
         </DialogActions>

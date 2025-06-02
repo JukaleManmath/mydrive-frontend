@@ -18,18 +18,27 @@ function Profile() {
   const [passwordChangeError, setPasswordChangeError] = useState('');
   const [passwordChangeSnackbar, setPasswordChangeSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
-  const { token } = useAuth(); // Removed unused 'user'
+  const { token, user } = useAuth(); // Get both token and user from auth context
 
   const fetchUserProfile = useCallback(async () => {
     setLoading(true);
     try {
+      console.log('Fetching user profile with token:', token);
       const response = await axios.get(`${API_URL}/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setUserProfile(response.data);
-      setEditedEmail(response.data.email);
-      setEditedUsername(response.data.username);
+      console.log('Fetched user profile:', response.data);
+      if (response.data && response.data.username) {
+        console.log('Setting user profile with username:', response.data.username);
+        setUserProfile(response.data);
+        setEditedEmail(response.data.email);
+        setEditedUsername(response.data.username);
+      } else {
+        console.error('User profile data missing username:', response.data);
+        setError('Invalid user profile data received');
+      }
     } catch (err) {
+      console.error('Error fetching profile data:', err);
       setError('Failed to fetch profile data');
     } finally {
       setLoading(false);
@@ -38,9 +47,12 @@ function Profile() {
 
   useEffect(() => {
     if (token) {
+      console.log('Token exists, fetching user profile');
       fetchUserProfile();
+    } else {
+      console.log('No token found, cannot fetch user profile');
     }
-  }, [token, fetchUserProfile]); // Added token and fetchUserProfile to dependencies
+  }, [token, fetchUserProfile]);
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);

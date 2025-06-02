@@ -62,6 +62,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const fetchUserData = async () => {
       if (!token) {
+        console.log('No token found, clearing user data');
         setUser(null);
         setIsAuthenticated(false);
         setIsLoading(false);
@@ -69,10 +70,20 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
+        console.log('Fetching user data with token:', token);
         const response = await axios.get(`${API_URL}/users/me`);
         console.log('Fetched user data:', response.data);
-        setUser(response.data);
-        setIsAuthenticated(true);
+        if (response.data && response.data.username) {
+          console.log('Setting user data with username:', response.data.username);
+          setUser(response.data);
+          setIsAuthenticated(true);
+        } else {
+          console.error('User data missing username:', response.data);
+          setUser(null);
+          setIsAuthenticated(false);
+          localStorage.removeItem('token');
+          setToken(null);
+        }
       } catch (error) {
         console.error('Error fetching user data:', error);
         setUser(null);
@@ -89,6 +100,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
+      console.log('Attempting login for username:', username);
       // Create form data
       const formData = new URLSearchParams();
       formData.append('username', username);
@@ -100,16 +112,25 @@ export const AuthProvider = ({ children }) => {
         },
       });
       const { access_token } = response.data;
+      console.log('Login successful, received token');
       localStorage.setItem('token', access_token);
       setToken(access_token);
 
       // Fetch user data immediately after login
       try {
+        console.log('Fetching user data after login');
         const userResponse = await axios.get(`${API_URL}/users/me`, {
           headers: { Authorization: `Bearer ${access_token}` },
         });
-        setUser(userResponse.data);
-        setIsAuthenticated(true);
+        console.log('User data after login:', userResponse.data);
+        if (userResponse.data && userResponse.data.username) {
+          console.log('Setting user data after login with username:', userResponse.data.username);
+          setUser(userResponse.data);
+          setIsAuthenticated(true);
+        } else {
+          console.error('User data missing username after login:', userResponse.data);
+          throw new Error('Invalid user data received');
+        }
       } catch (error) {
         console.error('Error fetching user data after login:', error);
         throw error;

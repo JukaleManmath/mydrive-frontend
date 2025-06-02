@@ -63,11 +63,11 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
                         throw new Error('Invalid response format from server');
                     }
                 } catch (err) {
-                    console.error('Error loading preview:', err);
+                        console.error('Error loading preview:', err);
                     setError(err.message || 'Failed to load preview');
                 } finally {
-                    setLoading(false);
-                }
+                setLoading(false);
+            }
             };
 
             loadPreview();
@@ -83,7 +83,6 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
 
     const getFileIcon = () => {
         if (!file) return <FileIcon />;
-        
         const fileType = file.file_type?.toLowerCase() || '';
         if (fileType.startsWith('image/')) return <ImageIcon />;
         if (fileType === 'application/pdf') return <PdfIcon />;
@@ -106,242 +105,39 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
     };
 
     const renderPreview = () => {
-        console.log('Rendering preview with:', {
-            loading,
-            error,
-            file,
-            previewUrl,
-            previewContent,
-            fileType: file?.file_type?.toLowerCase()
-        });
-
         if (loading) {
             return (
-                <Box 
-                    display="flex" 
-                    justifyContent="center" 
-                    alignItems="center" 
-                    minHeight="calc(100vh - 64px)"
-                    bgcolor="background.default"
-                >
-                    <CircularProgress size={60} sx={{ color: theme.palette.primary.main }} />
+                <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+                    <CircularProgress />
                 </Box>
             );
         }
-
         if (error) {
             return (
-                <Box 
-                    display="flex" 
-                    justifyContent="center" 
-                    alignItems="center" 
-                    minHeight="calc(100vh - 64px)"
-                    bgcolor="background.default"
-                >
-                    <Alert 
-                        severity="error" 
-                        sx={{ 
-                            maxWidth: '80%',
-                            p: 3,
-                            borderRadius: 0,
-                            bgcolor: 'rgba(239, 68, 68, 0.1)',
-                            color: theme.palette.error.main,
-                            '& .MuiAlert-icon': {
-                                color: theme.palette.error.main
-                            }
-                        }}
-                    >
-                        {error}
-                    </Alert>
+                <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+                    <Alert severity="error">{error}</Alert>
                 </Box>
             );
         }
-
-        if (!file) {
-            return (
-                <Box 
-                    display="flex" 
-                    justifyContent="center" 
-                    alignItems="center" 
-                    minHeight="calc(100vh - 64px)"
-                    bgcolor="background.default"
-                >
-                    <Typography variant="h6" color="text.secondary">
-                        No file selected
-                    </Typography>
-                </Box>
-            );
-        }
-
+        if (!file) return null;
         const fileType = file.file_type?.toLowerCase() || '';
-        console.log('Rendering preview for file type:', fileType);
-
-        // Handle text content
-        if (previewContent) {
-            console.log('Rendering text content preview');
-            return (
-                <Box
-                    sx={{
-                        height: 'calc(100vh - 64px)',
-                        width: '100%',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        bgcolor: 'background.default',
-                        p: 3,
-                        overflow: 'auto'
-                    }}
-                >
-                    <Paper
-                        elevation={0}
-                        sx={{
-                            width: '100%',
-                            height: '100%',
-                            p: 3,
-                            bgcolor: 'background.paper',
-                            overflow: 'auto',
-                            whiteSpace: 'pre-wrap',
-                            fontFamily: 'monospace'
-                        }}
-                    >
-                        <Typography component="pre" sx={{ m: 0 }}>
-                            {previewContent}
-                        </Typography>
-                    </Paper>
-                </Box>
-            );
-        }
-
-        // Handle binary files (images and PDFs)
         if (previewUrl) {
-            console.log('Rendering binary file preview with URL:', previewUrl);
+            if (fileType.startsWith('image/')) {
+                return <img src={previewUrl} alt={file?.filename} style={{ maxWidth: '100%', maxHeight: '60vh', objectFit: 'contain' }} />;
+            }
             if (fileType === 'application/pdf') {
-                return (
-                    <Box
-                        sx={{
-                            height: 'calc(100vh - 64px)',
-                            width: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            bgcolor: 'background.default',
-                            p: 0
-                        }}
-                    >
-                        <object
-                            data={previewUrl}
-                            type="application/pdf"
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                border: 'none',
-                                borderRadius: 0,
-                                boxShadow: 'none',
-                                backgroundColor: theme.palette.background.paper
-                            }}
-                        >
-                            <Box
-                                sx={{
-                                    height: '100%',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    gap: 2,
-                                    p: 3
-                                }}
-                            >
-                                <Typography variant="h6" color="text.secondary">
-                                    Unable to display PDF
-                                </Typography>
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={() => window.open(previewUrl, '_blank')}
-                                    startIcon={<PdfIcon />}
-                                >
-                                    Open PDF in New Tab
-                                </Button>
-                            </Box>
-                        </object>
-                    </Box>
-                );
-            } else if (fileType.startsWith('image/')) {
-                return (
-                    <Box
-                        sx={{
-                            height: 'calc(100vh - 64px)',
-                            width: '100%',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            bgcolor: 'background.default',
-                            p: 0
-                        }}
-                    >
-                        <img
-                            src={previewUrl}
-                            alt={file.filename}
-                            style={{
-                                maxWidth: '100%',
-                                maxHeight: '100%',
-                                objectFit: 'contain',
-                                borderRadius: 0,
-                                boxShadow: 'none'
-                            }}
-                            onError={(e) => {
-                                console.error('Error loading image:', e);
-                                setError('Failed to load image preview');
-                            }}
-                        />
-                    </Box>
-                );
-            } else if (fileType.startsWith('text/') || fileType.includes('javascript') || fileType.includes('json') || fileType.includes('xml') || fileType.includes('python') || fileType.includes('java') || fileType.includes('c++') || fileType.includes('c') || fileType.includes('php') || fileType.includes('ruby') || fileType.includes('swift')) {
-                return (
-                    <Box
-                        sx={{
-                            height: 'calc(100vh - 64px)',
-                            width: '100%',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            bgcolor: 'background.default',
-                            p: 3,
-                            overflow: 'auto'
-                        }}
-                    >
-                        <Paper
-                            elevation={0}
-                            sx={{
-                                width: '100%',
-                                height: '100%',
-                                p: 3,
-                                bgcolor: 'background.paper',
-                                overflow: 'auto',
-                                whiteSpace: 'pre-wrap',
-                                fontFamily: 'monospace'
-                            }}
-                        >
-                            <Typography component="pre" sx={{ m: 0 }}>
-                                {previewContent}
-                            </Typography>
-                        </Paper>
-                    </Box>
-                );
+                return <iframe src={previewUrl} style={{ width: '100%', height: '60vh', border: 'none' }} title={file?.filename} />;
+            }
+            if (fileType.startsWith('text/')) {
+                return <iframe src={previewUrl} style={{ width: '100%', height: '60vh', border: 'none' }} title={file?.filename} />;
             }
         }
-
-        console.log('No preview available for file type:', fileType);
+        if (previewContent) {
+            return <Box sx={{ whiteSpace: 'pre-wrap', p: 2 }}>{previewContent}</Box>;
+        }
         return (
-            <Box 
-                display="flex" 
-                justifyContent="center" 
-                alignItems="center" 
-                minHeight="calc(100vh - 64px)"
-                bgcolor="background.default"
-            >
-                <Typography variant="h6" color="text.secondary">
-                    Preview not available for this file type
-                </Typography>
+            <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+                <Typography color="text.secondary">Preview not available for this file type</Typography>
             </Box>
         );
     };
@@ -434,29 +230,29 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
                         <CloseIcon fontSize="small" />
                     </IconButton>
                 </Box>
-                <Button
+                    <Button
                     variant="outlined"
                     color="primary"
-                    onClick={handleDownload}
-                    disabled={downloading}
-                    sx={{
+                        onClick={handleDownload}
+                        disabled={downloading}
+                        sx={{ 
                         marginTop: 1,
                         marginBottom: 1
-                    }}
-                >
+                        }}
+                    >
                     {downloading ? 'Downloading...' : 'Download'}
-                </Button>
-                <Button
-                    variant="outlined"
+                    </Button>
+                    <Button
+                        variant="outlined"
                     color="primary"
                     onClick={() => onShare(file)}
-                    sx={{
+                        sx={{ 
                         marginTop: 1,
                         marginBottom: 1
-                    }}
-                >
-                    Share
-                </Button>
+                        }}
+                    >
+                        Share
+                    </Button>
             </Paper>
         );
     };
@@ -490,7 +286,7 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
             <DialogTitle sx={{ 
                 p: 2,
                 borderBottom: `1px solid ${theme.palette.divider}`,
-                display: 'flex',
+                    display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center'
             }}>
@@ -502,10 +298,10 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1 }}>
                     <Tooltip title="File Info">
-                        <IconButton 
-                            size="small" 
+                        <IconButton
+                            size="small"
                             onClick={() => setShowInfo(!showInfo)}
-                            sx={{ 
+                            sx={{
                                 color: showInfo ? theme.palette.primary.main : theme.palette.grey[500],
                                 '&:hover': {
                                     bgcolor: 'rgba(37, 99, 235, 0.08)',
@@ -517,10 +313,10 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
                         </IconButton>
                     </Tooltip>
                     <Tooltip title="Actions">
-                        <IconButton 
-                            size="small" 
+                        <IconButton
+                            size="small"
                             onClick={() => setShowActions(!showActions)}
-                            sx={{ 
+                            sx={{
                                 color: showActions ? theme.palette.primary.main : theme.palette.grey[500],
                                 '&:hover': {
                                     bgcolor: 'rgba(37, 99, 235, 0.08)',
@@ -531,23 +327,23 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
                             <MoreVertIcon fontSize="small" />
                         </IconButton>
                     </Tooltip>
-                    <IconButton 
+                        <IconButton
                         size="small" 
-                        onClick={onClose}
-                        sx={{ 
-                            color: theme.palette.grey[500],
-                            '&:hover': {
-                                bgcolor: 'rgba(37, 99, 235, 0.08)',
+                            onClick={onClose}
+                            sx={{
+                                color: theme.palette.grey[500],
+                                '&:hover': {
+                                    bgcolor: 'rgba(37, 99, 235, 0.08)',
                                 color: theme.palette.primary.main
-                            }
-                        }}
-                    >
-                        <CloseIcon fontSize="small" />
-                    </IconButton>
+                                }
+                            }}
+                        >
+                            <CloseIcon fontSize="small" />
+                        </IconButton>
                 </Box>
             </DialogTitle>
             <DialogContent sx={{ 
-                p: 0,
+                    p: 0,
                 display: 'flex',
                 flexDirection: 'column',
                 flex: 1,
@@ -559,7 +355,7 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
                     flex: 1,
                     overflow: 'hidden'
                 }}>
-                    {renderPreview()}
+                {renderPreview()}
                     {showInfo && renderFileInfo()}
                     {showActions && renderActions()}
                 </Box>
@@ -568,4 +364,4 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
     );
 };
 
-export default PreviewModal;
+export default PreviewModal; 

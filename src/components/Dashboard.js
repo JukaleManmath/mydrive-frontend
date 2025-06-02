@@ -44,6 +44,9 @@ import { getFilesSharedWithMe, shareFile, getRecentSharedFiles, getFileContent, 
 import PreviewModal from './PreviewModal';
 import { ShareDialog } from './ShareDialog';
 import VersionHistoryDialog from './VersionHistoryDialog';
+import ImageIcon from '@mui/icons-material/Image';
+import PdfIcon from '@mui/icons-material/PictureAsPdf';
+import TextIcon from '@mui/icons-material/TextSnippet';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://mydrive-backend-oi3r.onrender.com';
 
@@ -441,7 +444,12 @@ function Dashboard() {
     }
   };
 
-  const getFileIcon = () => {
+  const getFileIcon = (file) => {
+    if (!file) return <FileIcon sx={{ color: theme.palette.primary.main, fontSize: 32 }} />;
+    const fileType = file.file_type?.toLowerCase() || '';
+    if (fileType.startsWith('image/')) return <ImageIcon sx={{ color: theme.palette.success.main, fontSize: 32 }} />;
+    if (fileType === 'application/pdf') return <PdfIcon sx={{ color: theme.palette.error.main, fontSize: 32 }} />;
+    if (fileType.startsWith('text/')) return <TextIcon sx={{ color: theme.palette.info.main, fontSize: 32 }} />;
     return <FileIcon sx={{ color: theme.palette.primary.main, fontSize: 32 }} />;
   };
 
@@ -797,7 +805,7 @@ function Dashboard() {
                         {item.type === 'folder' ? (
                           <FolderIcon sx={{ color: theme.palette.warning.main, fontSize: 32 }} />
                         ) : (
-                          getFileIcon()
+                          getFileIcon(item)
                         )}
                       </Box>
                       <Box sx={{ minWidth: 0, flex: 1 }}>
@@ -808,7 +816,7 @@ function Dashboard() {
                           {item.filename}
                         </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {item.type === 'folder' ? 'Folder' : item.file_type || 'File'}
+                        {item.type === 'folder' ? 'Folder' : (item.file_type || 'File')}
                           </Typography>
                       </Box>
                     </Box>

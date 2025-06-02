@@ -286,23 +286,27 @@ function Dashboard() {
 
     try {
       const currentFolderId = path.length > 0 ? path[path.length - 1].id : null;
-      await axios.post(`${API_URL}/folders/`, 
-        { filename: newFolderName, parent_id: currentFolderId },
+      const response = await axios.post(`${API_URL}/folders/`, 
+        { name: newFolderName, parent_id: currentFolderId },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setNewFolderName('');
-      setCreateFolderDialogOpen(false);
-      fetchFiles();
-      setSnackbar({
-        open: true,
-        message: 'Folder created successfully',
-        severity: 'success',
-      });
+      
+      if (response.data) {
+        setNewFolderName('');
+        setCreateFolderDialogOpen(false);
+        fetchFiles();
+        setSnackbar({
+          open: true,
+          message: 'Folder created successfully',
+          severity: 'success',
+        });
+      }
     } catch (err) {
+      console.error('Error creating folder:', err);
       let errorMessage = 'Failed to create folder';
-      if (err.response && err.response.data && err.response.data.detail) {
+      if (err.response?.data?.detail) {
         errorMessage = `Failed to create folder: ${err.response.data.detail}`;
       }
       setSnackbar({
@@ -317,34 +321,54 @@ function Dashboard() {
     const file = event.target.files[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const currentFolderId = path.length > 0 ? path[path.length - 1].id : null;
-
-    if (currentFolderId !== null) {
-      formData.append('parent_id', currentFolderId);
-    }
-
     try {
-      await axios.post(`${API_URL}/files/upload`, formData, {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const currentFolderId = path.length > 0 ? path[path.length - 1].id : null;
+      if (currentFolderId !== null) {
+        formData.append('parent_id', currentFolderId);
+      }
+
+      const response = await axios.post(`${API_URL}/files/upload`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setSnackbar({
+            open: true,
+            message: `Uploading: ${percentCompleted}%`,
+            severity: 'info',
+          });
+        },
       });
-      fetchFiles();
-      setSnackbar({
-        open: true,
-        message: 'File uploaded successfully',
-        severity: 'success',
-      });
+
+      if (response.data) {
+        await fetchFiles();
+        setSnackbar({
+          open: true,
+          message: 'File uploaded successfully',
+          severity: 'success',
+        });
+      }
     } catch (err) {
+      console.error('Error uploading file:', err);
+      let errorMessage = 'Failed to upload file';
+      if (err.response?.data?.detail) {
+        errorMessage = `Failed to upload file: ${err.response.data.detail}`;
+      }
       setSnackbar({
         open: true,
-        message: 'Failed to upload file',
+        message: errorMessage,
         severity: 'error',
       });
+    } finally {
+      setLoading(false);
+      // Reset the file input
+      event.target.value = '';
     }
   };
 

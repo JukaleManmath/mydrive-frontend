@@ -154,6 +154,7 @@ function Dashboard() {
       });
       setFiles(response.data || []);
       setFilteredFiles(response.data || []);
+      console.log('Fetched files:', response.data);
       setError(null);
       setLoading(false);
     } catch (err) {

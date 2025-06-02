@@ -83,14 +83,9 @@ export const AuthProvider = ({ children }) => {
           return;
         }
 
-        // Process user data
+        // Use the user data directly from the backend
         const userData = response.data;
-        // If username is not present but email is, use email as username
-        if (!userData.username && userData.email) {
-          userData.username = userData.email.split('@')[0];
-        }
-
-        console.log('Processed user data:', userData);
+        console.log('Setting user data:', userData);
         setUser(userData);
         setIsAuthenticated(true);
       } catch (error) {
@@ -144,14 +139,9 @@ export const AuthProvider = ({ children }) => {
           throw new Error('No user data received');
         }
 
-        // Process user data
+        // Use the user data directly from the backend
         const userData = userResponse.data;
-        // If username is not present but email is, use email as username
-        if (!userData.username && userData.email) {
-          userData.username = userData.email.split('@')[0];
-        }
-
-        console.log('Processed user data:', userData);
+        console.log('Setting user data:', userData);
         setUser(userData);
         setIsAuthenticated(true);
         return true;

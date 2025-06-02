@@ -300,10 +300,11 @@ function Dashboard() {
       );
 
       if (response.data) {
+        console.log('Folder created, backend response:', response.data);
         setSnackbar({ open: true, message: 'Folder created successfully', severity: 'success' });
         setNewFolderName('');
         handleCloseCreateFolderDialog();
-        fetchFiles(); // Refresh the file list
+        fetchFiles(); // Always refresh the file list
       }
     } catch (error) {
       console.error('Error creating folder:', error);
@@ -345,6 +346,7 @@ function Dashboard() {
       });
 
       if (response.data) {
+        console.log('File uploaded, backend response:', response.data);
         await fetchFiles();
         setSnackbar({
           open: true,

@@ -81,6 +81,16 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
         };
     }, [open, file]);
 
+    // Debug: Log preview modal state
+    useEffect(() => {
+        if (open && file) {
+            console.log('DEBUG: PreviewModal file:', file);
+            console.log('DEBUG: PreviewModal fileType:', file?.file_type);
+            console.log('DEBUG: PreviewModal previewContent:', previewContent);
+            console.log('DEBUG: PreviewModal previewUrl:', previewUrl);
+        }
+    }, [open, file, previewContent, previewUrl]);
+
     const getFileIcon = () => {
         if (!file) return <FileIcon />;
         const fileType = file.file_type?.toLowerCase() || '';

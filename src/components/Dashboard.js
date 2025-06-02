@@ -641,6 +641,14 @@ function Dashboard() {
     }
   };
 
+  // Debug: Log all files and move dialog state
+  useEffect(() => {
+    if (moveDialogOpen) {
+      console.log('DEBUG: allFiles:', allFiles);
+      console.log('DEBUG: itemToMove:', itemToMove);
+    }
+  }, [moveDialogOpen, allFiles, itemToMove]);
+
   // Helper to recursively render all folders except the one being moved and its descendants
   const isDescendant = (folderId, excludeId) => {
     if (folderId === excludeId) return true;
@@ -650,32 +658,35 @@ function Dashboard() {
   };
 
   const renderFolderTree = (parentId, excludeId, level = 0) => {
-    return allFiles
+    const filtered = allFiles
       .filter(f => {
         if (f.type !== 'folder') return false;
         if (f.id === excludeId) return false;
         if (excludeId && isDescendant(f.id, excludeId)) return false;
         return f.parent_id === parentId;
-      })
-      .map(folder => (
-        <Box key={folder.id} sx={{ ml: level * 2 }}>
-          <ListItem
-            button
-            onClick={() => handleMove(folder.id)}
-            sx={{
-              borderRadius: 1,
-              pl: 2 + level * 2,
-              '&:hover': {
-                backgroundColor: 'action.hover',
-              },
-            }}
-          >
-            <FolderIcon sx={{ color: theme.palette.warning.main, mr: 2 }} />
-            <Typography>{folder.name}</Typography>
-          </ListItem>
-          {renderFolderTree(folder.id, excludeId, level + 1)}
-        </Box>
-      ));
+      });
+    if (moveDialogOpen && level === 0) {
+      console.log('DEBUG: Filtered move destinations (root level):', filtered);
+    }
+    return filtered.map(folder => (
+      <Box key={folder.id} sx={{ ml: level * 2 }}>
+        <ListItem
+          button
+          onClick={() => handleMove(folder.id)}
+          sx={{
+            borderRadius: 1,
+            pl: 2 + level * 2,
+            '&:hover': {
+              backgroundColor: 'action.hover',
+            },
+          }}
+        >
+          <FolderIcon sx={{ color: theme.palette.warning.main, mr: 2 }} />
+          <Typography>{folder.name}</Typography>
+        </ListItem>
+        {renderFolderTree(folder.id, excludeId, level + 1)}
+      </Box>
+    ));
   };
 
   if (loading) {

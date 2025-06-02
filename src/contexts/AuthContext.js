@@ -102,6 +102,19 @@ export const AuthProvider = ({ children }) => {
       const { access_token } = response.data;
       localStorage.setItem('token', access_token);
       setToken(access_token);
+
+      // Fetch user data immediately after login
+      try {
+        const userResponse = await axios.get(`${API_URL}/users/me`, {
+          headers: { Authorization: `Bearer ${access_token}` },
+        });
+        setUser(userResponse.data);
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error('Error fetching user data after login:', error);
+        throw error;
+      }
+
       return true;
     } catch (error) {
       console.error('Login error:', error);

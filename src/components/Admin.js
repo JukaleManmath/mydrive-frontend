@@ -24,6 +24,8 @@ import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL || 'https://mydrive-backend-oi3r.onrender.com';
+
 function Admin() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +38,7 @@ function Admin() {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/admin/users', {
+      const response = await axios.get(`${API_URL}/admin/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(response.data);
@@ -67,7 +69,7 @@ function Admin() {
   const handleEditSave = async () => {
     try {
       await axios.patch(
-        `http://localhost:8000/admin/users/${selectedUser.id}`,
+        `${API_URL}/admin/users/${selectedUser.id}`,
         editedUser,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -92,7 +94,7 @@ function Admin() {
   const handleDeleteUser = async (userId) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
-        await axios.delete(`http://localhost:8000/admin/users/${userId}`, {
+        await axios.delete(`${API_URL}/admin/users/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setSnackbar({

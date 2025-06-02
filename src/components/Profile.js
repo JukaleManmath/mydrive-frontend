@@ -3,6 +3,8 @@ import { Box, Typography, Container, Paper, TextField, Button, Alert, Snackbar, 
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL || 'https://mydrive-backend-oi3r.onrender.com';
+
 function Profile() {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -18,10 +20,10 @@ function Profile() {
 
   const { token } = useAuth(); // Removed unused 'user'
 
-  const fetchUserProfile = useCallback(async () => { // Wrapped in useCallback
+  const fetchUserProfile = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:8000/users/me', {
+      const response = await axios.get(`${API_URL}/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUserProfile(response.data);
@@ -32,7 +34,7 @@ function Profile() {
     } finally {
       setLoading(false);
     }
-  }, [token]); // Added token to dependencies
+  }, [token]);
 
   useEffect(() => {
     if (token) {
@@ -55,22 +57,22 @@ function Profile() {
       return;
     }
 
-     if (userProfile && editedEmail === userProfile.email && editedUsername === userProfile.username) { // Added null check for userProfile
-       setSnackbar({ open: true, message: 'No changes detected.', severity: 'info' });
-       setIsEditing(false);
-       return;
+    if (userProfile && editedEmail === userProfile.email && editedUsername === userProfile.username) {
+      setSnackbar({ open: true, message: 'No changes detected.', severity: 'info' });
+      setIsEditing(false);
+      return;
     }
 
     try {
       const updateData = {};
-      if (userProfile && editedEmail !== userProfile.email) { // Added null check for userProfile
+      if (userProfile && editedEmail !== userProfile.email) {
         updateData.email = editedEmail;
       }
-      if (userProfile && editedUsername !== userProfile.username) { // Added null check for userProfile
+      if (userProfile && editedUsername !== userProfile.username) {
         updateData.username = editedUsername;
       }
 
-      const response = await axios.patch('http://localhost:8000/users/me', updateData, {
+      const response = await axios.patch(`${API_URL}/users/me`, updateData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUserProfile(response.data);
@@ -78,7 +80,7 @@ function Profile() {
       setSnackbar({ open: true, message: 'Profile updated successfully', severity: 'success' });
     } catch (err) {
       let errorMessage = 'Failed to update profile';
-       if (err.response && err.response.data && err.response.data.detail) {
+      if (err.response && err.response.data && err.response.data.detail) {
         errorMessage = `Failed to update profile: ${err.response.data.detail}`;
       }
       setSnackbar({ open: true, message: errorMessage, severity: 'error' });
@@ -101,7 +103,7 @@ function Profile() {
     setPasswordChangeError('');
 
     try {
-      await axios.patch('http://localhost:8000/users/me/password', 
+      await axios.patch(`${API_URL}/users/me/password`, 
         { current_password: passwordChange.current_password, new_password: passwordChange.new_password },
         {
           headers: { Authorization: `Bearer ${token}` },

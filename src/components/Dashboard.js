@@ -123,15 +123,15 @@ function Dashboard() {
   const updatePath = useCallback(async (newPath) => {
     try {
       // Verify the folder exists before updating path
-      const currentFolderId = newPath[newPath.length - 1].id;
-      if (currentFolderId !== null) {
+      const currentFolderId = newPath[newPath.length - 1]?.id;
+      if (currentFolderId !== null && currentFolderId !== undefined) {
         const response = await axios.get(`${API_URL}/files/${currentFolderId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!response.data) {
           // If folder doesn't exist, go back to root
-          setPath([{ id: null, filename: 'My Files' }]);
-          window.history.replaceState({ path: [{ id: null, filename: 'My Files' }] }, '', window.location.pathname);
+          setPath([{ id: null, name: 'My Files' }]);
+          window.history.replaceState({ path: [{ id: null, name: 'My Files' }] }, '', window.location.pathname);
           return;
         }
       }
@@ -140,8 +140,8 @@ function Dashboard() {
       window.history.pushState({ path: newPath }, '', window.location.pathname);
     } catch (error) {
       // If there's an error (e.g., folder deleted), go back to root
-      setPath([{ id: null, filename: 'My Files' }]);
-      window.history.replaceState({ path: [{ id: null, filename: 'My Files' }] }, '', window.location.pathname);
+      setPath([{ id: null, name: 'My Files' }]);
+      window.history.replaceState({ path: [{ id: null, name: 'My Files' }] }, '', window.location.pathname);
     }
   }, [token]);
 

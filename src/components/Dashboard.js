@@ -641,6 +641,31 @@ function Dashboard() {
     }
   };
 
+  // Helper to recursively render folder tree
+  const renderFolderTree = (parentId, excludeId, level = 0) => {
+    return allFiles
+      .filter(f => f.type === 'folder' && f.id !== excludeId && f.parent_id === parentId)
+      .map(folder => (
+        <Box key={folder.id} sx={{ ml: level * 2 }}>
+          <ListItem
+            button
+            onClick={() => handleMove(folder.id)}
+            sx={{
+              borderRadius: 1,
+              pl: 2 + level * 2,
+              '&:hover': {
+                backgroundColor: 'action.hover',
+              },
+            }}
+          >
+            <FolderIcon sx={{ color: theme.palette.warning.main, mr: 2 }} />
+            <Typography>{folder.name}</Typography>
+          </ListItem>
+          {renderFolderTree(folder.id, excludeId, level + 1)}
+        </Box>
+      ));
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
@@ -1121,120 +1146,16 @@ function Dashboard() {
             Select destination folder:
           </Typography>
           <List>
-            {/* Show parent folder option if we're in a subfolder */}
-            {path.length > 1 && (
-              <ListItem
-                button
-                onClick={() => handleMove(path[path.length - 2].id)}
-                sx={{
-                  borderRadius: 1,
-                  '&:hover': {
-                    backgroundColor: 'action.hover',
-                  },
-                }}
-              >
-                <FolderIcon sx={{ color: theme.palette.warning.main, mr: 2 }} />
-                <Typography>.. (Parent Folder)</Typography>
-              </ListItem>
-            )}
-
-            {/* Current level folders */}
+            {/* Recursive folder tree for move destination */}
             <Box sx={{ mt: 2, mb: 1 }}>
               <Typography variant="subtitle2" color="text.secondary" sx={{ px: 2 }}>
-                Current Level Folders
+                Select Destination Folder
               </Typography>
             </Box>
-            {allFiles
-              .filter(f => 
-                f.type === 'folder' && 
-                f.id !== itemToMove?.id && 
-                f.id !== path[path.length - 1].id &&
-                f.parent_id === path[path.length - 1].id
-              )
-              .map((folder) => (
-                <ListItem
-                  key={folder.id}
-                  button
-                  onClick={() => handleMove(folder.id)}
-                  sx={{
-                    borderRadius: 1,
-                    '&:hover': {
-                      backgroundColor: 'action.hover',
-                    },
-                  }}
-                >
-                  <FolderIcon sx={{ color: theme.palette.warning.main, mr: 2 }} />
-                  <Typography>{folder.name}</Typography>
-                </ListItem>
-              ))}
-
-            {/* Subfolders organized by parent */}
-            <Box sx={{ mt: 2, mb: 1 }}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ px: 2 }}>
-                Other Folders
-              </Typography>
-            </Box>
-            {(() => {
-              // Group folders by their parent
-              const foldersByParent = {};
-              allFiles
-                .filter(f => 
-                  f.type === 'folder' && 
-                  f.id !== itemToMove?.id && 
-                  f.id !== path[path.length - 1].id &&
-                  f.parent_id !== path[path.length - 1].id
-                )
-                .forEach(folder => {
-                  const parentId = folder.parent_id;
-                  if (!foldersByParent[parentId]) {
-                    foldersByParent[parentId] = [];
-                  }
-                  foldersByParent[parentId].push(folder);
-                });
-
-              // Render folders grouped by parent
-              return Object.entries(foldersByParent).map(([parentId, folders]) => {
-                const parentFolder = allFiles.find(f => f.id === parseInt(parentId));
-                const parentName = parentFolder ? parentFolder.name : 'Root';
-
-                return (
-                  <Box key={parentId} sx={{ mb: 2 }}>
-                    <Typography 
-                      variant="subtitle2" 
-                      color="text.secondary" 
-                      sx={{ px: 2, py: 1, bgcolor: 'action.hover' }}
-                    >
-                      {parentName}
-                    </Typography>
-                    {folders.map(folder => (
-                      <ListItem
-                        key={folder.id}
-                        button
-                        onClick={() => handleMove(folder.id)}
-                        sx={{
-                          borderRadius: 1,
-                          pl: 4,
-                          '&:hover': {
-                            backgroundColor: 'action.hover',
-                          },
-                        }}
-                      >
-                        <FolderIcon sx={{ color: theme.palette.warning.main, mr: 2 }} />
-                        <Typography>{folder.name}</Typography>
-                      </ListItem>
-                    ))}
-                  </Box>
-                );
-              });
-            })()}
-
-            {allFiles.filter(f => 
-              f.type === 'folder' && 
-              f.id !== itemToMove?.id && 
-              f.id !== path[path.length - 1].id
-            ).length === 0 && (
+            {renderFolderTree(null, itemToMove?.id)}
+            {allFiles.filter(f => f.type === 'folder' && f.id !== itemToMove?.id).length === 0 && (
               <Typography color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
-                No other folders available to move to
+                No folders available to move to
               </Typography>
             )}
           </List>

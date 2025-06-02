@@ -133,12 +133,24 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
                 return <img src={previewUrl} alt={displayName} style={{ maxWidth: '100%', maxHeight: '60vh', objectFit: 'contain' }} />;
             }
             if (fileType === 'application/pdf') {
-                return <iframe src={previewUrl} style={{ width: '100%', height: '60vh', border: 'none' }} title={displayName} />;
+                return (
+                    <Box sx={{ width: '100%', height: '65vh', overflow: 'auto', background: '#f8f8f8', borderRadius: 2, p: 1 }}>
+                        <iframe src={previewUrl} style={{ width: '100%', height: '100%', border: 'none', minHeight: 500 }} title={displayName} />
+                    </Box>
+                );
             }
-            return <iframe src={previewUrl} style={{ width: '100%', height: '60vh', border: 'none' }} title={displayName} />;
+            return (
+                <Box sx={{ width: '100%', height: '60vh', overflow: 'auto', background: '#f8f8f8', borderRadius: 2, p: 1 }}>
+                    <iframe src={previewUrl} style={{ width: '100%', height: '100%', border: 'none', minHeight: 400 }} title={displayName} />
+                </Box>
+            );
         }
         if (previewContent || file.content) {
-            return <Box sx={{ whiteSpace: 'pre-wrap', p: 2 }}><pre style={{ margin: 0 }}>{previewContent || file.content}</pre></Box>;
+            return (
+                <Box sx={{ whiteSpace: 'pre-wrap', p: 2, maxHeight: '60vh', overflow: 'auto' }}>
+                    <pre style={{ margin: 0, maxHeight: '55vh', overflow: 'auto', fontSize: 15, background: '#f8f8f8', borderRadius: 4, padding: 12 }}>{previewContent || file.content}</pre>
+                </Box>
+            );
         }
         return (
             <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">

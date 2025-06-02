@@ -41,13 +41,14 @@ export const ShareDialog = ({ open, onClose, onSubmit, fileName }) => {
             await onSubmit(email, permission);
             handleClose();
         } catch (err) {
-            setError(err.message || 'Failed to share file');
+            setError(err.message || (err.response?.data?.detail) || 'Failed to share file');
         } finally {
             setLoading(false);
         }
     };
 
     const handleClose = () => {
+        if (loading) return;
         setEmail('');
         setPermission('read');
         setError('');
@@ -57,22 +58,22 @@ export const ShareDialog = ({ open, onClose, onSubmit, fileName }) => {
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
             <DialogTitle>Share "{fileName}"</DialogTitle>
-            <DialogContent>
+                <DialogContent>
                 {error && (
                     <Alert severity="error" sx={{ mb: 2 }}>
                         {error}
                     </Alert>
                 )}
                 <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-                    <TextField
-                        fullWidth
-                        label="Email Address"
-                        value={email}
+                        <TextField
+                            fullWidth
+                            label="Email Address"
+                            value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         margin="normal"
                         required
-                        error={!!error}
-                    />
+                            error={!!error}
+                        />
                     <FormControl fullWidth margin="normal">
                         <InputLabel>Permission</InputLabel>
                         <Select
@@ -84,21 +85,21 @@ export const ShareDialog = ({ open, onClose, onSubmit, fileName }) => {
                             <MenuItem value="edit">Can Edit</MenuItem>
                         </Select>
                     </FormControl>
-                </Box>
-            </DialogContent>
+                    </Box>
+                </DialogContent>
             <DialogActions>
                 <Button onClick={handleClose} disabled={loading}>
-                    Cancel
-                </Button>
-                <Button
+                        Cancel
+                    </Button>
+                    <Button 
                     onClick={handleSubmit}
-                    variant="contained"
+                        variant="contained"
                     disabled={loading}
                     startIcon={loading ? <CircularProgress size={20} /> : null}
-                >
-                    Share
-                </Button>
-            </DialogActions>
+                    >
+                        Share
+                    </Button>
+                </DialogActions>
         </Dialog>
     );
 }; 

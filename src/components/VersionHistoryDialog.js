@@ -16,6 +16,7 @@ import {
     Divider,
     Alert,
     Chip,
+    Snackbar,
 } from '@mui/material';
 import {
     Restore as RestoreIcon,
@@ -36,6 +37,7 @@ function VersionHistoryDialog({ open, onClose, file, onVersionRestored }) {
     const [currentVersionNumber, setCurrentVersionNumber] = useState(null);
     const [restoreLoading, setRestoreLoading] = useState(false);
     const [lastRestoredVersion, setLastRestoredVersion] = useState(null);
+    const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
     const theme = useTheme();
 
     useEffect(() => {
@@ -327,6 +329,25 @@ function VersionHistoryDialog({ open, onClose, file, onVersionRestored }) {
                     Close
                 </Button>
             </DialogActions>
+
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={6000}
+                onClose={() => setSnackbar({ ...snackbar, open: false })}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+                <Alert
+                    onClose={() => setSnackbar({ ...snackbar, open: false })}
+                    severity={snackbar.severity}
+                    sx={{ 
+                        width: '100%',
+                        borderRadius: 1,
+                        boxShadow: 2
+                    }}
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </Dialog>
     );
 }

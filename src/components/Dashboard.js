@@ -286,6 +286,8 @@ function Dashboard() {
       return;
     }
 
+    console.log('Creating folder with name:', newFolderName); // Debug log
+
     try {
       const currentFolderId = path.length > 0 ? path[path.length - 1].id : null;
       const response = await axios.post(
@@ -319,6 +321,8 @@ function Dashboard() {
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
+
+    console.log('Uploading file with name:', file.name); // Debug log
 
     try {
       setLoading(true);

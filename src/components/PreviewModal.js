@@ -93,7 +93,7 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
 
     const getFileIcon = () => {
         if (!file) return <FileIcon />;
-        const fileType = file.file_type?.toLowerCase() || '';
+        const fileType = (file.mime_type || file.file_type || '').toLowerCase();
         if (fileType.startsWith('image/')) return <ImageIcon />;
         if (fileType === 'application/pdf') return <PdfIcon />;
         if (fileType.startsWith('text/')) return <TextIcon />;
@@ -136,7 +136,7 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
             );
         }
         if (!file) return null;
-        const fileType = file.file_type?.toLowerCase() || '';
+        const fileType = (file.mime_type || file.file_type || '').toLowerCase();
         const displayName = file.filename || file.name;
         if (previewUrl) {
             if (fileType.startsWith('image/')) {

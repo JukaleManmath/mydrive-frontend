@@ -121,19 +121,18 @@ const PreviewModal = ({ open, onClose, file, onShare }) => {
         }
         if (!file) return null;
         const fileType = file.file_type?.toLowerCase() || '';
+        const displayName = file.filename || file.name;
         if (previewUrl) {
             if (fileType.startsWith('image/')) {
-                return <img src={previewUrl} alt={file?.filename} style={{ maxWidth: '100%', maxHeight: '60vh', objectFit: 'contain' }} />;
+                return <img src={previewUrl} alt={displayName} style={{ maxWidth: '100%', maxHeight: '60vh', objectFit: 'contain' }} />;
             }
             if (fileType === 'application/pdf') {
-                return <iframe src={previewUrl} style={{ width: '100%', height: '60vh', border: 'none' }} title={file?.filename} />;
+                return <iframe src={previewUrl} style={{ width: '100%', height: '60vh', border: 'none' }} title={displayName} />;
             }
-            if (fileType.startsWith('text/')) {
-                return <iframe src={previewUrl} style={{ width: '100%', height: '60vh', border: 'none' }} title={file?.filename} />;
-            }
+            return <iframe src={previewUrl} style={{ width: '100%', height: '60vh', border: 'none' }} title={displayName} />;
         }
         if (previewContent) {
-            return <Box sx={{ whiteSpace: 'pre-wrap', p: 2 }}>{previewContent}</Box>;
+            return <Box sx={{ whiteSpace: 'pre-wrap', p: 2 }}><pre style={{ margin: 0 }}>{previewContent}</pre></Box>;
         }
         return (
             <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">

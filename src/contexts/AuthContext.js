@@ -128,19 +128,28 @@ export const AuthProvider = ({ children }) => {
         const userResponse = await axios.get(`${API_URL}/users/me`, {
           headers: { Authorization: `Bearer ${access_token}` },
         });
-        console.log('User data after login:', userResponse.data);
+        console.log('Raw user data after login:', userResponse.data);
         
-        if (!userResponse.data || !userResponse.data.username) {
-          console.error('Invalid user data received:', userResponse.data);
-          throw new Error('Invalid user data received');
+        // Check if we have a valid user object
+        if (!userResponse.data) {
+          console.error('No user data received');
+          throw new Error('No user data received');
         }
 
-        console.log('Setting user data after login with username:', userResponse.data.username);
+        // Log all available fields in the user data
+        console.log('User data fields:', Object.keys(userResponse.data));
+        
+        // Set user data even if username is not present
+        console.log('Setting user data:', userResponse.data);
         setUser(userResponse.data);
         setIsAuthenticated(true);
         return true;
       } catch (error) {
         console.error('Error fetching user data after login:', error);
+        if (error.response) {
+          console.error('Error response data:', error.response.data);
+          console.error('Error response status:', error.response.status);
+        }
         // Clean up on error
         localStorage.removeItem('token');
         setToken(null);
@@ -150,6 +159,10 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Login error:', error);
+      if (error.response) {
+        console.error('Error response data:', error.response.data);
+        console.error('Error response status:', error.response.status);
+      }
       // Clean up on error
       localStorage.removeItem('token');
       setToken(null);

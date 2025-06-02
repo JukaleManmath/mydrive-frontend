@@ -51,11 +51,17 @@ function Login() {
       console.error('Login error:', err);
       if (err.response) {
         console.error('Error response:', err.response.data);
-        setError(err.response.data.detail || 'Invalid username or password');
+        if (err.response.status === 401) {
+          setError('Invalid username or password');
+        } else if (err.response.status === 500) {
+          setError('Server error. Please try again later.');
+        } else {
+          setError(err.response.data.detail || 'An error occurred during login');
+        }
       } else if (err.request) {
         console.error('No response received:', err.request);
-        setError('No response from server. Please try again.');
-      } else if (err.message === 'Invalid user data received') {
+        setError('No response from server. Please check your internet connection.');
+      } else if (err.message === 'No user data received') {
         setError('Unable to retrieve user data. Please try again.');
       } else if (err.message === 'Invalid response from server') {
         setError('Server returned an invalid response. Please try again.');

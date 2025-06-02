@@ -36,9 +36,15 @@ function Login() {
     setError('');
     setLoading(true);
 
+    if (!username.trim() || !password.trim()) {
+      setError('Please enter both username and password');
+      setLoading(false);
+      return;
+    }
+
     try {
       console.log('Attempting login with username:', username);
-      const response = await login(username, password);
+      await login(username, password);
       console.log('Login successful, navigating to:', from);
       navigate(from, { replace: true });
     } catch (err) {
@@ -49,9 +55,13 @@ function Login() {
       } else if (err.request) {
         console.error('No response received:', err.request);
         setError('No response from server. Please try again.');
+      } else if (err.message === 'Invalid user data received') {
+        setError('Unable to retrieve user data. Please try again.');
+      } else if (err.message === 'Invalid response from server') {
+        setError('Server returned an invalid response. Please try again.');
       } else {
         console.error('Error message:', err.message);
-        setError('An error occurred during login');
+        setError('An error occurred during login. Please try again.');
       }
     } finally {
       setLoading(false);

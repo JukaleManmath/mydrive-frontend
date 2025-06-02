@@ -111,6 +111,12 @@ export const AuthProvider = ({ children }) => {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       });
+      
+      if (!response.data || !response.data.access_token) {
+        console.error('No access token in response:', response.data);
+        throw new Error('Invalid response from server');
+      }
+
       const { access_token } = response.data;
       console.log('Login successful, received token');
       localStorage.setItem('token', access_token);
@@ -123,22 +129,32 @@ export const AuthProvider = ({ children }) => {
           headers: { Authorization: `Bearer ${access_token}` },
         });
         console.log('User data after login:', userResponse.data);
-        if (userResponse.data && userResponse.data.username) {
-          console.log('Setting user data after login with username:', userResponse.data.username);
-          setUser(userResponse.data);
-          setIsAuthenticated(true);
-        } else {
-          console.error('User data missing username after login:', userResponse.data);
+        
+        if (!userResponse.data || !userResponse.data.username) {
+          console.error('Invalid user data received:', userResponse.data);
           throw new Error('Invalid user data received');
         }
+
+        console.log('Setting user data after login with username:', userResponse.data.username);
+        setUser(userResponse.data);
+        setIsAuthenticated(true);
+        return true;
       } catch (error) {
         console.error('Error fetching user data after login:', error);
+        // Clean up on error
+        localStorage.removeItem('token');
+        setToken(null);
+        setUser(null);
+        setIsAuthenticated(false);
         throw error;
       }
-
-      return true;
     } catch (error) {
       console.error('Login error:', error);
+      // Clean up on error
+      localStorage.removeItem('token');
+      setToken(null);
+      setUser(null);
+      setIsAuthenticated(false);
       throw error;
     }
   };

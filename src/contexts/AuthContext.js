@@ -73,17 +73,26 @@ export const AuthProvider = ({ children }) => {
         console.log('Fetching user data with token:', token);
         const response = await axios.get(`${API_URL}/users/me`);
         console.log('Fetched user data:', response.data);
-        if (response.data && response.data.username) {
-          console.log('Setting user data with username:', response.data.username);
-          setUser(response.data);
-          setIsAuthenticated(true);
-        } else {
-          console.error('User data missing username:', response.data);
+        
+        if (!response.data) {
+          console.error('No user data received');
           setUser(null);
           setIsAuthenticated(false);
           localStorage.removeItem('token');
           setToken(null);
+          return;
         }
+
+        // Extract user data and ensure username is present
+        const userData = response.data;
+        if (!userData.username && userData.email) {
+          // If username is not present but email is, use email as username
+          userData.username = userData.email.split('@')[0];
+        }
+
+        console.log('Setting user data:', userData);
+        setUser(userData);
+        setIsAuthenticated(true);
       } catch (error) {
         console.error('Error fetching user data:', error);
         setUser(null);
@@ -139,9 +148,15 @@ export const AuthProvider = ({ children }) => {
         // Log all available fields in the user data
         console.log('User data fields:', Object.keys(userResponse.data));
         
-        // Set user data even if username is not present
-        console.log('Setting user data:', userResponse.data);
-        setUser(userResponse.data);
+        // Extract user data and ensure username is present
+        const userData = userResponse.data;
+        if (!userData.username && userData.email) {
+          // If username is not present but email is, use email as username
+          userData.username = userData.email.split('@')[0];
+        }
+        
+        console.log('Processed user data:', userData);
+        setUser(userData);
         setIsAuthenticated(true);
         return true;
       } catch (error) {
